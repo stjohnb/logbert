@@ -66,6 +66,8 @@ def hdfs_sampling(log_file, window='session'):
         event_num = json.load(f)
     df["EventId"] = df["EventId"].apply(lambda x: event_num.get(x, -1))
 
+    # 1 line for every user, user id followed by sequence of events
+
     data_dict = defaultdict(list) #preserve insertion order of items
     for idx, row in tqdm(df.iterrows()):
         blkId_list = re.findall(r'(blk_-?\d+)', row['Content'])
@@ -74,8 +76,8 @@ def hdfs_sampling(log_file, window='session'):
             data_dict[blk_Id].append(row["EventId"])
 
     data_df = pd.DataFrame(list(data_dict.items()), columns=['BlockId', 'EventSequence'])
-    data_df.to_csv(log_sequence_file, index=None)
-    print("hdfs sampling done")
+    r = data_df.to_csv(log_sequence_file, index=None)
+    print(f'hdfs sampling done {r}')
 
 
 def generate_train_test(hdfs_sequence_file, n=None, ratio=0.3):
